@@ -1,0 +1,6 @@
+# Enter your project name
+project_name="Hello"
+project_version="1.0.0"
+source_files=("hello.c" "hello2.c" "hello3.c")
+executable_output="hello"
+dependencies=("sdl2")
