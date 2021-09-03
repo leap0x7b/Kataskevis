@@ -13,5 +13,8 @@ $ chmod +x /usr/local/bin/kataskevis
 
 ## Progress
 - [X] Make a simple build system
-- [ ] Add options support
+- [ ] Add option to output a shared/static library
+- [ ] Add custom options feature
+- [ ] Add support for pre-build and post-build commands
+- [ ] Add support custom build commands
 - [ ] Add Ninja support

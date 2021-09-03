@@ -107,6 +107,18 @@ EOF
       fi
     done
   fi
+  if [[ ! -z ${optional_dependencies} ]]; then
+    for dep in ${optional_dependencies[@]}; do
+      echo -n "${LBLUE}Checking if optional dependency ${BOLD}${dep}${RESET}${LBLUE} exists... ${RESET}"
+      if [[ $(pkg-config ${dep}) ]]; then
+        echo "yes"
+        CFLAGS+=$(pkg-config --cflags ${dep})
+        LDFLAGS+=$(pkg-config --libs ${dep})
+      else
+        echo "no"
+      fi
+    done
+  fi
   echo -n "${LBLUE}Generating Makefile... ${RESET}"
   cat > ${BUILDDIR}/Makefile <<EOF
 # This is an auto-generated file from ${KATASKEVIS_PROGNAME} ${KATASKEVIS_VERSION}
@@ -123,7 +135,7 @@ T := \$(shell \$(MAKE) \$(MAKECMDGOALS) --no-print-directory \\
 	ECHO="COUNTTHIS" | grep -c "COUNTTHIS")
 N := x
 C = \$(words \$N)\$(eval N := x \$N)
-ECHO = echo -ne "\r[\$C/\$T]"
+ECHO = echo -ne "\r[\$C/\$T]\033[92m"
 endif
 
 NAME=${project_name}$([[ ! -z ${project_version} ]] && echo -e "\nVERSION=${project_version}")
@@ -142,13 +154,15 @@ all: \$(EXEOUT)
 clean:
 	@\$(ECHO) Removing all object files
 	@rm -f \$(OBJFILES)
+	@\$(ECHO) Removing \033[1m\$(EXEOUT)\033[0m
+	@rm -f \$(EXEOUT)
 
 install: \$(EXEOUT)
-	@\$(ECHO) Installing \$(EXEOUT)
+	@\$(ECHO) Installing \033[1m\$(EXEOUT)\033[0m
 	@install -m755 \$(EXEOUT) \$(PREFIX)/bin/\$(EXEOUT)
 
 \$(OBJFILES): \$(SRCFILES)
-	@\$(ECHO) Compiling \$(notdir \$<)
+	@\$(ECHO) Compiling \033[1m\$(notdir \$<)\033[0m
 	@\$(CC) \$(CFLAGS) $< ${OBJOUTFLAGS}\$@
 
 \$(EXEOUT): \$(OBJFILES)

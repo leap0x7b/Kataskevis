@@ -1,6 +1,15 @@
+# This is a sample file for Kataskevis
+# You could use this as a base for your next Kataskevis project.
+
 # Enter your project name
 project_name="Hello"
+# Your project version
 project_version="1.0.0"
+# Source files for Kataskevis to compile
 source_files=("hello.c" "hello2.c" "hello3.c")
+# Executable output file name
 executable_output="hello"
-dependencies=("sdl2")
+# Required dependencies required for your project (Note: only pkg-config dependencies is supported)
+dependencies=("dep1" "dep2" "dep3")
+# Optional dependencies (same as required dependencies, but the dependencies doesn't need to be installed. Mainly used for optional features)
+optional_dependencies=("optdep1" "optdep2")
