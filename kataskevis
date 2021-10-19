@@ -27,7 +27,7 @@ declare -A CCLIST=(
   [clang]="clang"
   [zig]="zig cc"
   [tcc]="tcc"
-  [msvc]="cccl"
+  [msvc]="cl"
   [watcom]="wcc"
 )
 
@@ -138,14 +138,14 @@ C = \$(words \$N)\$(eval N := x \$N)
 ECHO = echo -ne "\r[\$C/\$T]\033[92m"
 endif
 
-NAME=${project_name}$([[ ! -z ${project_version} ]] && echo -e "\nVERSION=${project_version}")
-SRCFILES=$(for file in ${source_files[@]}; do printf "%s " ${SRCDIR}/${file}; done)
-OBJFILES=\$(notdir \$(SRCFILES:.c=.o))
-EXEOUT=${executable_output}
-CC=${CC}
-CFLAGS=${CFLAGS} ${DEFINEFLAGS}__KATASKEVIS__
-LDFLAGS=${LDFLAGS}
-PREFIX?=/usr/local
+NAME = ${project_name}$([[ ! -z ${project_version} ]] && echo -e "\nVERSION=${project_version}")
+SRCFILES = $(for file in ${source_files[@]}; do printf "%s " ${SRCDIR}/${file}; done)
+OBJFILES = \$(notdir \$(SRCFILES:.c=.o))
+EXEOUT = ${executable_output}
+CC = ${CC}
+CFLAGS = ${CFLAGS} ${DEFINEFLAGS}__KATASKEVIS__
+LDFLAGS = ${LDFLAGS}
+PREFIX ?= /usr/local
 
 .PHONY: all clean
 
