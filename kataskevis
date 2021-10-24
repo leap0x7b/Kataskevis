@@ -53,8 +53,8 @@ EOF
   [[ -f ${SRCDIR}/Kataskevisfile ]] && source ${SRCDIR}/Kataskevisfile || error "${SRCDIR}/Kataskevisfile doesn't exist. Quitting"
   echo "${LGREEN}Project name:${RESET} ${project_name}"
   [[ ! -z ${project_version} ]] && echo "${LGREEN}Project version:${RESET} ${project_version}"
-  echo -n "${LBLUE}Checking C compiler... ${RESET}"
-  CFLAGS="-O2 -fno-plt -flto"
+  echo -n "${LBLUE}Checking the C compiler... ${RESET}"
+  CFLAGS="-O2 -Wall "
   OUTFLAGS="-o "
   OBJOUTFLAGS="-c -o "
   DEFINEFLAGS="-D"
@@ -93,14 +93,17 @@ EOF
   elif [[ $(which wcc) ]]; then
     CC=${CCLIST[watcom]}
     echo "$(wcc -v | head -1)"
+  else
+    echo "not installed"
+    error "The C compiler isn't installed! Please install a C compiler like GCC"
   fi
   if [[ ! -z ${dependencies} ]]; then
     for dep in ${dependencies[@]}; do
       echo -n "${LBLUE}Checking if required dependency ${BOLD}${dep}${RESET}${LBLUE} exists... ${RESET}"
-      if [[ $(pkg-config ${dep}) ]]; then
+      if $(pkg-config ${dep}); then
         echo "yes"
-        CFLAGS+=$(pkg-config --cflags ${dep})
-        LDFLAGS+=$(pkg-config --libs ${dep})
+        CFLAGS+="$(pkg-config --cflags ${dep}) "
+        LDFLAGS+="$(pkg-config --libs ${dep}) "
       else
         echo "no"
         error "The required dependency ${dep} doesn't exist. Make sure the dependency is installed. If you sure the dependency is installed, it might be a typo. Check your spelling and try again."
@@ -110,15 +113,17 @@ EOF
   if [[ ! -z ${optional_dependencies} ]]; then
     for dep in ${optional_dependencies[@]}; do
       echo -n "${LBLUE}Checking if optional dependency ${BOLD}${dep}${RESET}${LBLUE} exists... ${RESET}"
-      if [[ $(pkg-config ${dep}) ]]; then
+      if $(pkg-config ${dep}); then
         echo "yes"
-        CFLAGS+=$(pkg-config --cflags ${dep})
-        LDFLAGS+=$(pkg-config --libs ${dep})
+        CFLAGS+="$(pkg-config --cflags ${dep}) "
+        LDFLAGS+="$(pkg-config --libs ${dep}) "
       else
         echo "no"
       fi
     done
   fi
+  [[ ! -z ${cflags} ]] && CFLAGS+="${cflags} "
+  [[ ! -z ${ldflags} ]] && LDFLAGS+="${ldflags} "
   echo -n "${LBLUE}Generating Makefile... ${RESET}"
   cat > ${BUILDDIR}/Makefile <<EOF
 # This is an auto-generated file from ${KATASKEVIS_PROGNAME} ${KATASKEVIS_VERSION}
@@ -135,7 +140,7 @@ T := \$(shell \$(MAKE) \$(MAKECMDGOALS) --no-print-directory \\
 	ECHO="COUNTTHIS" | grep -c "COUNTTHIS")
 N := x
 C = \$(words \$N)\$(eval N := x \$N)
-ECHO = echo -ne "\r[\$C/\$T]\033[92m"
+ECHO = printf "\r\033[K[\$C/\$T] \033[92m%b\033[0m"
 endif
 
 NAME=${project_name}$([[ ! -z ${project_version} ]] && echo -e "\nVERSION=${project_version}")
@@ -150,23 +155,26 @@ PREFIX?=/usr/local
 .PHONY: all clean
 
 all: \$(EXEOUT)
+	@printf "\n"
 
 clean:
-	@\$(ECHO) Removing all object files
+	@\$(ECHO) "Removing all object files"
 	@rm -f \$(OBJFILES)
-	@\$(ECHO) Removing \033[1m\$(EXEOUT)\033[0m
+	@\$(ECHO) "Removing \033[1m\$(EXEOUT)"
 	@rm -f \$(EXEOUT)
+	@printf "\n"
 
 install: \$(EXEOUT)
-	@\$(ECHO) Installing \033[1m\$(EXEOUT)\033[0m
+	@\$(ECHO) "Installing \033[1m\$(EXEOUT)"
 	@install -m755 \$(EXEOUT) \$(PREFIX)/bin/\$(EXEOUT)
+	@printf "\n"
 
 \$(OBJFILES): \$(SRCFILES)
-	@\$(ECHO) Compiling \033[1m\$(notdir \$<)\033[0m
+	@\$(ECHO) "Compiling \033[1m\$(notdir \$<)"
 	@\$(CC) \$(CFLAGS) $< ${OBJOUTFLAGS}\$@
 
 \$(EXEOUT): \$(OBJFILES)
-	@\$(ECHO) Linking \$@
+	@\$(ECHO) "Linking \$@"
 	@\$(CC) \$(CFLAGS) \$(LDFLAGS) $< ${OUTFLAGS}\$@
 
 endif
