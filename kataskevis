@@ -28,6 +28,7 @@ declare -A CCLIST=(
   [zig]="zig cc"
   [tcc]="tcc"
   [msvc]="cl"
+  [msvc-clang]="clang-cl"
   [watcom]="wcc"
 )
 
@@ -77,6 +78,12 @@ EOF
       CC=${CCLIST[gcc]}
       echo "$(gcc --version | head -1)"
     fi
+  elif [[ $(which clang-cl) ]]; then
+    CC=${CCLIST[msvc-clang]}
+    echo "$(clang-cl --version | head -1)"
+  elif [[ $(which clang) ]]; then
+    CC=${CCLIST[clang]}
+    echo "$(clang --version | head -1)"
   elif [[ $(which zig) ]]; then
     CC=${CCLIST[zig]}
     echo "zig $(zig version)"
@@ -86,7 +93,7 @@ EOF
   elif [[ $(which cl) ]]; then
     CC="${CCLIST[msvc]} /nologo"
     CFLAGS="/O2"
-    OUTFLAGS="/Fe"
+    OUTFLAGS="/link /Fe"
     OBJOUTFLAGS="/Fo"
     DEFINEFLAGS="/D"
     echo "$(cl -v | head -1)"
@@ -140,7 +147,7 @@ T := \$(shell \$(MAKE) \$(MAKECMDGOALS) --no-print-directory \\
 	ECHO="COUNTTHIS" | grep -c "COUNTTHIS")
 N := x
 C = \$(words \$N)\$(eval N := x \$N)
-ECHO = printf "\r\033[K[\$C/\$T] \033[92m%b\033[0m"
+ECHO = printf "[\$C/\$T] \033[92m%b\033[0m"
 endif
 
 NAME = ${project_name}$([[ ! -z ${project_version} ]] && echo -e "\nVERSION=${project_version}")
